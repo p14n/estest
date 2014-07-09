@@ -1,0 +1,44 @@
+<html>
+<script>
+//curl -XGET http://localhost:9200/rpg/_search -d '{"query":{"query_string":{"query":"content:PFAPI"}},"highlight":{"fields":{"content":{}}}}'
+var displayResults = function(){
+ var data = JSON.parse(this.responseText);
+ var rdiv = document.getElementById("results")
+ rdiv.innerHTML = '';
+ //alert(data.hits.total)
+ data.hits.hits.forEach(function(hit){
+
+  var resultDiv = document.createElement("div")
+  var resultLink = document.createElement("a")
+  var resultCode = document.createElement("span")
+
+  resultLink.target="_svu"
+  resultLink.href = "http://172.30.30.71:8080/SVU/F63FIGARO/"+hit._type+"/"+hit._source.name+"/H"
+
+  var linkText = document.createTextNode(hit._type + '.' +hit._source.name)
+  var codeTextContent = hit.highlight.content.toString();
+  resultCode.innerHTML = codeTextContent.replace(/ /g,"&nbsp;").replace(/\n/g,"<br/>")
+
+  resultLink.appendChild(linkText)
+  resultLink.appendChild(document.createElement("br"))
+  resultDiv.appendChild(resultLink)
+  resultDiv.appendChild(resultCode)
+  resultDiv.appendChild(document.createElement("br"))
+  rdiv.appendChild(resultDiv)
+ });
+}
+var searchES = function(e){
+ var oReq = new XMLHttpRequest();
+ oReq.onload = displayResults;
+ oReq.open("POST", "http://localhost:9200/rpg/_search", true);
+ oReq.send('{"query":{"query_string":{"query":"content:'+e.value+'"}},"highlight":{"pre_tags": ["<b>"],"post_tags": ["</b>"],"fields":{"content":{}}}}');
+}
+</script>
+
+<body>
+<input id="term" name="term" onchange="searchES(this)"></input>
+
+<div id="results"></div>
+</body>
+
+</html>
